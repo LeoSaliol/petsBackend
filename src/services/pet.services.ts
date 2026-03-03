@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma';
+import { HttpError } from '../utils/httpError';
 
 interface CreatePetInput {
     name: string;
@@ -32,15 +33,16 @@ export const getMyPets = async (ownerId: number) => {
 export const updatePet = async (
     petId: number,
     ownerId: number,
-    data: { name?: string; bio?: string; image?: string }
+    data: { name?: string; bio?: string; image?: string },
 ) => {
     const pet = await prisma.pet.findFirst({
         where: { id: petId, ownerId },
     });
 
     if (!pet) {
-        throw new Error(
-            'Pet not found or you do not have permission to update it.'
+        throw new HttpError(
+            'Pet not found or you do not have permission to update it.',
+            400,
         );
     }
 
@@ -56,7 +58,7 @@ export const deletePet = async (petId: number, ownerId: number) => {
     });
 
     if (!pet) {
-        throw new Error('Pet not found');
+        throw new HttpError('Pet not found', 404);
     }
 
     await prisma.pet.delete({
