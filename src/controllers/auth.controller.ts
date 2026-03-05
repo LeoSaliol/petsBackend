@@ -1,40 +1,39 @@
-import { Request, Response } from 'express';
-import { loginUser, registerUser } from '../services/auth.services';
+import { NextFunction, Request, Response } from 'express';
+import * as authService from '../services/auth.services';
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
-        const { name, email, password } = req.body;
-
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: 'Missing fields' });
-        }
-
-        const user = await registerUser({ name, email, password });
-
+        const user = await authService.registerUser(req.body);
         res.status(201).json({
-            id: user.id,
-            name: user.name,
-            email: user.email,
+            success: true,
+            data: user,
+            message: 'User registered successfully',
         });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        next(error);
     }
 };
 
 //* Login controller
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
-        const { email, password } = req.body;
+        const data = await authService.loginUser(req.body);
 
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Missing fields' });
-        }
-
-        const data = await loginUser({ email, password });
-
-        res.json(data);
+        res.json({
+            success: true,
+            data,
+            message: 'Login successful',
+        });
     } catch (error: any) {
-        res.status(401).json({ message: error.message });
+        next(error);
     }
 };
