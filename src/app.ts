@@ -8,6 +8,7 @@ import likeRoutes from './routes/like.routes';
 import commentRoutes from './routes/comment.routes';
 import followRoutes from './routes/follow.routes';
 import userRoutes from './routes/user.routes';
+import notificationRoutes from './routes/notifications.routes';
 import { errorMidleware } from './middlewares/error.middleware';
 
 const app = express();
@@ -34,6 +35,6 @@ app.use('/comments', commentRoutes);
 
 app.use('/follow', followRoutes);
 app.use('/users', userRoutes);
-
+app.use('/notifications', notificationRoutes);
 app.use(errorMidleware);
 export default app;

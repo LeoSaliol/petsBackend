@@ -1,3 +1,4 @@
+import cloudinary, { getPublicIdFromUrl } from '../config/cloudinary';
 import { prisma } from '../config/prisma';
 import { HttpError } from '../utils/httpError';
 
@@ -25,9 +26,21 @@ export const createPost = async (
     });
 };
 
-export const getFeed = async () => {
-    return prisma.post.findMany({
-        orderBy: { createdAt: 'desc' },
+export const getFeed = async (cursor?: string) => {
+    const posts = await prisma.post.findMany({
+        take: 10,
+
+        ...(cursor && {
+            skip: 1,
+            cursor: {
+                id: Number(cursor),
+            },
+        }),
+
+        orderBy: {
+            createdAt: 'desc',
+        },
+
         include: {
             pet: {
                 select: {
@@ -36,6 +49,7 @@ export const getFeed = async () => {
                     image: true,
                 },
             },
+
             _count: {
                 select: {
                     likes: true,
@@ -44,6 +58,8 @@ export const getFeed = async () => {
             },
         },
     });
+
+    return posts;
 };
 
 export const getPostsByPet = async (petId: number) => {
@@ -51,4 +67,49 @@ export const getPostsByPet = async (petId: number) => {
         where: { petId },
         orderBy: { createdAt: 'desc' },
     });
+};
+
+export const deletePost = async (postId: number) => {
+    const post = await prisma.post.findUnique({
+        where: { id: postId },
+    });
+    if (!post) {
+        throw new HttpError('Post not found', 404);
+    }
+    const publicId = getPublicIdFromUrl(post.image);
+    await cloudinary.uploader.destroy(publicId);
+    await prisma.post.delete({
+        where: { id: postId },
+    });
+    return { message: 'Post deleted' };
+};
+
+export const updatePost = async (
+    postId: number,
+    content?: string,
+    image?: string,
+) => {
+    const post = await prisma.post.findUnique({
+        where: { id: postId },
+    });
+
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    if (image) {
+        const publicId = getPublicIdFromUrl(post.image);
+
+        await cloudinary.uploader.destroy(publicId);
+    }
+
+    const updatedPost = await prisma.post.update({
+        where: { id: postId },
+        data: {
+            content,
+            image: image ?? post.image,
+        },
+    });
+
+    return updatedPost;
 };

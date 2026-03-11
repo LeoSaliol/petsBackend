@@ -32,30 +32,68 @@ export const toggleFollow = async (followerId: number, followingId: number) => {
     return { following: true };
 };
 
-export const getFollowers = async (userId: number) => {
-    return prisma.follow.findMany({
-        where: { followingId: userId },
+export const getFollowers = async (petId: number, cursor?: number) => {
+    const followers = await prisma.follow.findMany({
+        where: {
+            followingId: petId,
+        },
+
+        take: 10,
+
+        ...(cursor && {
+            skip: 1,
+            cursor: {
+                id: cursor,
+            },
+        }),
+
         include: {
             follower: {
                 select: {
                     id: true,
                     name: true,
+                    image: true,
                 },
             },
         },
+
+        orderBy: {
+            id: 'desc',
+        },
     });
+
+    return followers;
 };
 
-export const getFollowing = async (userId: number) => {
-    return prisma.follow.findMany({
-        where: { followerId: userId },
+export const getFollowing = async (petId: number, cursor?: number) => {
+    const following = await prisma.follow.findMany({
+        where: {
+            followerId: petId,
+        },
+
+        take: 10,
+
+        ...(cursor && {
+            skip: 1,
+            cursor: {
+                id: cursor,
+            },
+        }),
+
         include: {
             following: {
                 select: {
                     id: true,
                     name: true,
+                    image: true,
                 },
             },
         },
+
+        orderBy: {
+            id: 'desc',
+        },
     });
+
+    return following;
 };

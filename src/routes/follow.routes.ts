@@ -7,12 +7,12 @@ const router = Router();
 router.use(authMiddleware);
 
 //! seguir / dejar de seguir
-router.post('/:userId', toggle);
+router.post('/:petId', toggle);
 
 //! ver seguidores
-router.get('/:userId/followers', followers);
+router.get('/:petId/followers', followers);
 
 //! ver seguidos
-router.get('/:userId/following', following);
+router.get('/:petId/following', following);
 
 export default router;

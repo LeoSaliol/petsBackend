@@ -1,11 +1,15 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import {
     toggleFollow,
     getFollowers,
     getFollowing,
 } from '../services/follow.service';
 
-export const toggle = async (req: Request, res: Response) => {
+export const toggle = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const followingId = Number(req.params.userId);
 
@@ -16,23 +20,35 @@ export const toggle = async (req: Request, res: Response) => {
 
         res.json(result);
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        next(error);
     }
 };
 
-export const followers = async (req: Request, res: Response) => {
+export const followers = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
-        const userId = Number(req.params.userId);
+        const petId = Number(req.params.id);
+        const cursor = req.query.cursor ? Number(req.query.cursor) : undefined;
 
-        const result = await getFollowers(userId);
+        const followers = await getFollowers(petId, cursor);
 
-        res.json(result);
-    } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        res.json({
+            success: true,
+            data: followers,
+        });
+    } catch (error) {
+        next(error);
     }
 };
 
-export const following = async (req: Request, res: Response) => {
+export const following = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const userId = Number(req.params.userId);
 
@@ -40,6 +56,6 @@ export const following = async (req: Request, res: Response) => {
 
         res.json(result);
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        next(error);
     }
 };

@@ -1,7 +1,11 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { getLikesByPost, toggleLike } from '../services/like.services';
 
-export const toggle = async (req: Request, res: Response) => {
+export const toggle = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const postId = Number(req.params.postId);
 
@@ -9,11 +13,19 @@ export const toggle = async (req: Request, res: Response) => {
 
         res.json(result);
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        next(error);
     }
 };
-export const byPost = async (req: Request, res: Response) => {
-    const postId = Number(req.params.postId);
-    const likes = await getLikesByPost(postId);
-    res.json(likes);
+export const byPost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const postId = Number(req.params.postId);
+        const likes = await getLikesByPost(postId);
+        res.json(likes);
+    } catch (error: any) {
+        next(error);
+    }
 };

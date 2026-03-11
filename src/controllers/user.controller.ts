@@ -1,7 +1,11 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { getProfile } from '../services/user.services';
 
-export const profile = async (req: Request, res: Response) => {
+export const profile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const profileUserId = Number(req.params.userId);
 
@@ -9,6 +13,6 @@ export const profile = async (req: Request, res: Response) => {
 
         res.json(result);
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        next(error);
     }
 };

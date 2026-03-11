@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma';
+
 import { HttpError } from '../utils/httpError';
 
 interface CreatePetInput {
@@ -64,4 +65,36 @@ export const deletePet = async (petId: number, ownerId: number) => {
     await prisma.pet.delete({
         where: { id: petId },
     });
+};
+
+export const getPerfilPet = async (petId: number) => {
+    const pet = await prisma.pet.findUnique({
+        where: { id: petId },
+
+        include: {
+            posts: {
+                select: {
+                    id: true,
+                    image: true,
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
+            },
+
+            _count: {
+                select: {
+                    followers: true,
+                    following: true,
+                    posts: true,
+                },
+            },
+        },
+    });
+
+    if (!pet) {
+        throw new HttpError('Pet not found', 404);
+    }
+
+    return pet;
 };

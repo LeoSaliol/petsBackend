@@ -1,7 +1,11 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { createComment, getCommentsByPost } from '../services/comment.services';
 
-export const create = async (req: Request, res: Response) => {
+export const create = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
     try {
         const postId = Number(req.params.postId);
         const { content } = req.body;
@@ -14,12 +18,20 @@ export const create = async (req: Request, res: Response) => {
 
         res.status(201).json(comment);
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        next(error);
     }
 };
 
-export const byPost = async (req: Request, res: Response) => {
-    const postId = Number(req.params.postId);
-    const comments = await getCommentsByPost(postId);
-    res.json(comments);
+export const byPost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const postId = Number(req.params.postId);
+        const comments = await getCommentsByPost(postId);
+        res.json(comments);
+    } catch (error) {
+        next(error);
+    }
 };
