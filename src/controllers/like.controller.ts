@@ -9,7 +9,7 @@ export const toggle = async (
     try {
         const postId = Number(req.params.postId);
 
-        const result = await toggleLike(req.userId!, postId);
+        const result = await toggleLike(req.body.petId, postId);
 
         res.json(result);
     } catch (error: any) {

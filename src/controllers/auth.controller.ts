@@ -27,7 +27,11 @@ export const login = async (
 ) => {
     try {
         const data = await authService.loginUser(req.body);
-
+        res.cookie('token', data.token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+        });
         res.json({
             success: true,
             data,

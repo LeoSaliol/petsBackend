@@ -7,15 +7,15 @@ import {
     remove,
     update,
 } from '../controllers/post.controller';
-import { upload } from '../middlewares/upload.middleware';
+import { postImage } from '../middlewares/upload.middleware';
 
 const router = Router();
 
+router.get('/feed', feed);
 router.use(authMiddleware);
 
-router.post('/', upload.single('image'), create);
-router.get('/feed', feed);
+router.post('/', postImage.single('image'), create);
 router.get('/pet/:petId', postsByPet);
 router.delete('/:id', remove);
-router.put('/:id', upload.single('image'), update);
+router.put('/:id', postImage.single('image'), update);
 export default router;

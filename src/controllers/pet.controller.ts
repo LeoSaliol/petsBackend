@@ -12,10 +12,13 @@ export const create = async (
     next: NextFunction,
 ) => {
     try {
-        const { name, bio, image } = req.body;
+        const { name, bio } = req.body;
+        const image = (req.file as any)?.path;
 
-        if (!name) {
-            return res.status(400).json({ message: 'Name is required' });
+        if (!name || !image) {
+            return res
+                .status(400)
+                .json({ message: 'Name and image are required' });
         }
 
         const pet = await createPet({
@@ -51,7 +54,16 @@ export const update = async (
 ) => {
     try {
         const petId = Number(req.params.id);
-        const pet = await updatePet(petId, req.userId!, req.body);
+        const { name, bio } = req.body;
+        const image = (req.file as any)?.path;
+
+        if (!name || !image) {
+            return res
+                .status(400)
+                .json({ message: 'Name and image are required' });
+        }
+
+        const pet = await updatePet(petId, req.userId!, { name, bio, image });
         res.json(pet);
     } catch (error: any) {
         next(error);

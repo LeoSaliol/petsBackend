@@ -8,20 +8,18 @@ interface JwtPayload {
 export const authMiddleware = (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
 ) => {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies.token;
 
-    if (!authHeader) {
+    if (!token) {
         return res.status(401).json({ message: 'No token provided' });
     }
-
-    const token = authHeader.split(' ')[1]; //? Bearer TOKEN
 
     try {
         const decoded = jwt.verify(
             token,
-            process.env.JWT_SECRET as string
+            process.env.JWT_SECRET as string,
         ) as JwtPayload;
 
         req.userId = decoded.userId;

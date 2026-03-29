@@ -5,7 +5,7 @@ export const getProfile = async (
     profileUserId: number,
     currentUserId: number,
 ) => {
-    const user = await prisma.user.findUnique({
+    const pet = await prisma.pet.findUnique({
         where: { id: profileUserId },
         select: {
             id: true,
@@ -19,8 +19,8 @@ export const getProfile = async (
         },
     });
 
-    if (!user) {
-        throw new HttpError('User not found', 404);
+    if (!pet) {
+        throw new HttpError('Pet not found', 404);
     }
 
     const isFollowing = await prisma.follow.findUnique({
@@ -33,10 +33,10 @@ export const getProfile = async (
     });
 
     return {
-        id: user.id,
-        name: user.name,
-        followersCount: user._count.followers,
-        followingCount: user._count.following,
+        id: pet.id,
+        name: pet.name,
+        followersCount: pet._count.followers,
+        followingCount: pet._count.following,
         isFollowing: !!isFollowing,
     };
 };

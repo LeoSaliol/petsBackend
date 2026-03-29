@@ -1,11 +1,12 @@
 import { prisma } from '../config/prisma';
 
-export const toggleLike = async (userId: number, postId: number) => {
+export const toggleLike = async (petId: number, postId: number) => {
     //* Quitar el like si ya existe, o agregarlo si no existe
+
     const existingLike = await prisma.like.findUnique({
         where: {
-            userId_postId: {
-                userId,
+            petId_postId: {
+                petId,
                 postId,
             },
         },
@@ -21,8 +22,8 @@ export const toggleLike = async (userId: number, postId: number) => {
 
     await prisma.like.create({
         data: {
-            userId,
             postId,
+            petId,
         },
     });
 
@@ -33,11 +34,11 @@ export const getLikesByPost = async (postId: number) => {
     return prisma.like.findMany({
         where: { postId },
         include: {
-            user: {
+            pet: {
                 select: {
                     id: true,
                     name: true,
-                    email: true,
+                    image: true,
                 },
             },
         },

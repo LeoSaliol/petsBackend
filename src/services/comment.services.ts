@@ -1,14 +1,14 @@
 import { prisma } from '../config/prisma';
 
 export const createComment = async (
-    userId: number,
+    petId: number,
     postId: number,
     content: string,
 ) => {
     return prisma.comment.create({
         data: {
             content,
-            userId,
+            petId,
             postId,
         },
     });
@@ -19,10 +19,11 @@ export const getCommentsByPost = async (postId: number) => {
         where: { postId },
         orderBy: { createdAt: 'asc' },
         include: {
-            user: {
+            pet: {
                 select: {
                     id: true,
                     name: true,
+                    image: true,
                 },
             },
         },

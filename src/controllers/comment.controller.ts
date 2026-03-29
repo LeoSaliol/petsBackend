@@ -8,13 +8,13 @@ export const create = async (
 ) => {
     try {
         const postId = Number(req.params.postId);
-        const { content } = req.body;
+        const { content, petId } = req.body;
 
         if (!content) {
             return res.status(400).json({ message: 'Content required' });
         }
 
-        const comment = await createComment(req.userId!, postId, content);
+        const comment = await createComment(petId, postId, content);
 
         res.status(201).json(comment);
     } catch (error: any) {

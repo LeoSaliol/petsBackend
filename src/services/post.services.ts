@@ -6,6 +6,7 @@ export const createPost = async (
     petId: number,
     ownerId: number,
     content?: string,
+
     image?: string,
 ) => {
     //-- verifica que la mascota sea del usuario
@@ -26,7 +27,7 @@ export const createPost = async (
     });
 };
 
-export const getFeed = async (cursor?: string) => {
+export const getFeed = async (cursor?: string, petId?: number) => {
     const posts = await prisma.post.findMany({
         take: 10,
 
@@ -54,6 +55,14 @@ export const getFeed = async (cursor?: string) => {
                 select: {
                     likes: true,
                     comments: true,
+                },
+            },
+            likes: {
+                where: {
+                    petId: petId,
+                },
+                select: {
+                    petId: true,
                 },
             },
         },
