@@ -10,6 +10,17 @@ export const getProfile = async (
         select: {
             id: true,
             name: true,
+            image: true,
+            bio: true,
+            createdAt: true,
+            posts: {
+                select: {
+                    id: true,
+                    image: true,
+                    content: true,
+                    createdAt: true,
+                },
+            },
             _count: {
                 select: {
                     followers: true,
@@ -22,21 +33,36 @@ export const getProfile = async (
     if (!pet) {
         throw new HttpError('Pet not found', 404);
     }
-
-    const isFollowing = await prisma.follow.findUnique({
-        where: {
-            followerId_followingId: {
-                followerId: currentUserId,
-                followingId: profileUserId,
+    if (currentUserId) {
+        const isFollowing = await prisma.follow.findUnique({
+            where: {
+                followerId_followingId: {
+                    followerId: currentUserId,
+                    followingId: profileUserId,
+                },
             },
-        },
-    });
+        });
+        return {
+            id: pet.id,
+            name: pet.name,
+            followersCount: pet._count.followers,
+            followingCount: pet._count.following,
+            isFollowing: !!isFollowing,
+            image: pet.image,
+            bio: pet.bio,
+            createdAt: pet.createdAt,
+            posts: pet.posts,
+        };
+    }
 
     return {
         id: pet.id,
         name: pet.name,
         followersCount: pet._count.followers,
         followingCount: pet._count.following,
-        isFollowing: !!isFollowing,
+        image: pet.image,
+        bio: pet.bio,
+        createdAt: pet.createdAt,
+        posts: pet.posts,
     };
 };

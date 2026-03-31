@@ -36,6 +36,7 @@ export const registerUser = async ({
             password: hashedPassword,
         },
     });
+    console.log('user', user);
 
     return user;
 };
@@ -43,6 +44,8 @@ export const registerUser = async ({
 //* Login service
 
 export const loginUser = async ({ email, password }: LoginInput) => {
+    console.log('aca entra?');
+    console.log({ email, password });
     const user = await prisma.user.findUnique({
         where: { email },
     });
@@ -58,7 +61,7 @@ export const loginUser = async ({ email, password }: LoginInput) => {
     }
 
     const token = jwt.sign(
-        { petId: user.id },
+        { userId: user.id },
         process.env.JWT_SECRET as string,
         { expiresIn: '7d' },
     );

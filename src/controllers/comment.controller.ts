@@ -8,7 +8,8 @@ export const create = async (
 ) => {
     try {
         const postId = Number(req.params.postId);
-        const { content, petId } = req.body;
+        const { content } = req.body;
+        const petId = req.petId!;
 
         if (!content) {
             return res.status(400).json({ message: 'Content required' });

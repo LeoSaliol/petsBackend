@@ -25,7 +25,7 @@ export const create = async (
 
         const post = await createPost(
             Number(petId),
-            req.userId!,
+            req.user!.id,
             content,
             image,
         );
@@ -36,9 +36,15 @@ export const create = async (
     }
 };
 
-export const feed = async (_: Request, res: Response, next: NextFunction) => {
+export const feed = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const posts = await getFeed();
+        const { cursor, petId } = req.query;
+
+        const posts = await getFeed(
+            cursor ? String(cursor) : undefined,
+            petId ? Number(petId) : undefined,
+        );
+
         res.json(posts);
     } catch (error: any) {
         next(error);

@@ -7,7 +7,7 @@ export const postImage = multer({
         cloudinary,
         params: {
             folder: 'petsocial_posts',
-            allowed_formats: ['jpg', 'png', 'jpeg'],
+            allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
         } as any,
     }),
 });
@@ -16,8 +16,8 @@ export const petImage = multer({
     storage: new CloudinaryStorage({
         cloudinary,
         params: {
-            folder: 'petsocial_posts',
-            allowed_formats: ['jpg', 'png', 'jpeg'],
+            folder: 'petsocial_pets',
+            allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
         } as any,
     }),
 });

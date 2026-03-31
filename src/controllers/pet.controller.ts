@@ -25,7 +25,7 @@ export const create = async (
             name,
             bio,
             image,
-            ownerId: req.userId!,
+            ownerId: req.user!.id,
         });
 
         res.status(201).json(pet);
@@ -40,8 +40,9 @@ export const myPets = async (
     next: NextFunction,
 ) => {
     try {
-        const pets = await getMyPets(req.userId!);
+        const pets = await getMyPets(req.user!.id);
         res.json(pets);
+        console.log(pets);
     } catch (error: any) {
         next(error);
     }
@@ -63,7 +64,7 @@ export const update = async (
                 .json({ message: 'Name and image are required' });
         }
 
-        const pet = await updatePet(petId, req.userId!, { name, bio, image });
+        const pet = await updatePet(petId, req.user!.id, { name, bio, image });
         res.json(pet);
     } catch (error: any) {
         next(error);
@@ -77,7 +78,7 @@ export const remove = async (
 ) => {
     try {
         const petId = Number(req.params.id);
-        await deletePet(petId, req.userId!);
+        await deletePet(petId, req.user!.id);
         res.status(204).send();
     } catch (error: any) {
         next(error);

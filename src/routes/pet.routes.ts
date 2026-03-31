@@ -2,10 +2,11 @@ import { Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { create, myPets, update, remove } from '../controllers/pet.controller';
 import { petImage } from '../middlewares/upload.middleware';
+import { attachPet } from '../middlewares/attachPet';
 
 const router = Router();
 
-router.use(authMiddleware);
+router.use(authMiddleware, attachPet);
 
 router.post('/', petImage.single('image'), create);
 router.get('/me', myPets);

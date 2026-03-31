@@ -8,8 +8,8 @@ export const profile = async (
 ) => {
     try {
         const profileUserId = Number(req.params.userId);
-
-        const result = await getProfile(profileUserId, req.userId!);
+        const petId = req.petId;
+        const result = await getProfile(profileUserId, petId!);
 
         res.json(result);
     } catch (error: any) {

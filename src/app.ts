@@ -11,6 +11,7 @@ import userRoutes from './routes/user.routes';
 import notificationRoutes from './routes/notifications.routes';
 import { errorMidleware } from './middlewares/error.middleware';
 import cookieParser from 'cookie-parser';
+import { attachPet } from './middlewares/attachPet';
 const app = express();
 
 // app.use(cors());
@@ -26,11 +27,11 @@ app.use('/auth', authRoutes);
 
 app.use('/pets', petRoutes);
 app.use('/posts', postRoutes);
-app.get('/me', authMiddleware, (req, res) => {
+app.get('/me', authMiddleware, attachPet, (req, res) => {
     res.json({
         message: 'Access granted',
         user: {
-            id: req.userId,
+            id: req.user!.id,
         },
     });
 });

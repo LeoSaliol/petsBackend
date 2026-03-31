@@ -27,7 +27,7 @@ export const createPost = async (
     });
 };
 
-export const getFeed = async (cursor?: string, petId?: number) => {
+export const getFeed = async (petId?: number, cursor?: string) => {
     const posts = await prisma.post.findMany({
         take: 10,
 
@@ -68,7 +68,10 @@ export const getFeed = async (cursor?: string, petId?: number) => {
         },
     });
 
-    return posts;
+    return posts.map((post) => ({
+        ...post,
+        likedByUser: post.likes.length > 0,
+    }));
 };
 
 export const getPostsByPet = async (petId: number) => {

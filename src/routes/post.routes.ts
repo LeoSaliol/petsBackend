@@ -8,14 +8,15 @@ import {
     update,
 } from '../controllers/post.controller';
 import { postImage } from '../middlewares/upload.middleware';
+import { attachPet } from '../middlewares/attachPet';
 
 const router = Router();
 
 router.get('/feed', feed);
-router.use(authMiddleware);
+router.get('/pet/:petId', postsByPet);
+router.use(authMiddleware, attachPet);
 
 router.post('/', postImage.single('image'), create);
-router.get('/pet/:petId', postsByPet);
 router.delete('/:id', remove);
 router.put('/:id', postImage.single('image'), update);
 export default router;

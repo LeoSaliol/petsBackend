@@ -17,7 +17,7 @@ export const toggleLike = async (petId: number, postId: number) => {
             where: { id: existingLike.id },
         });
 
-        return { liked: false };
+        return { liked: false, petId };
     }
 
     await prisma.like.create({
@@ -27,7 +27,7 @@ export const toggleLike = async (petId: number, postId: number) => {
         },
     });
 
-    return { liked: true };
+    return { liked: true, petId };
 };
 
 export const getLikesByPost = async (postId: number) => {
