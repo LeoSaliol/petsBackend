@@ -11,10 +11,10 @@ export const toggle = async (
     next: NextFunction,
 ) => {
     try {
-        const followingId = Number(req.params.userId);
+        const followingId = Number(req.params.petId);
 
         const result = await toggleFollow(
-            req.userId!, //* usuario logueado
+            req.petId!, //* usuario logueado
             followingId, //* usuario a seguir
         );
 
@@ -50,9 +50,9 @@ export const following = async (
     next: NextFunction,
 ) => {
     try {
-        const userId = Number(req.params.userId);
+        const petId = Number(req.params.petId);
 
-        const result = await getFollowing(userId);
+        const result = await getFollowing(petId);
 
         res.json(result);
     } catch (error: any) {

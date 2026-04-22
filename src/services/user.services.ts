@@ -1,9 +1,12 @@
+import { is } from 'zod/v4/locales';
 import { prisma } from '../config/prisma';
 import { HttpError } from '../utils/httpError';
+import { update } from '../controllers/pet.controller';
+import cloudinary, { getPublicIdFromUrl } from '../config/cloudinary';
 
 export const getProfile = async (
     profileUserId: number,
-    currentUserId: number,
+    currentUserId?: number,
 ) => {
     const pet = await prisma.pet.findUnique({
         where: { id: profileUserId },
@@ -14,11 +17,15 @@ export const getProfile = async (
             bio: true,
             createdAt: true,
             posts: {
+                orderBy: { createdAt: 'desc' },
                 select: {
                     id: true,
                     image: true,
                     content: true,
                     createdAt: true,
+                    _count: {
+                        select: { comments: true, likes: true },
+                    },
                 },
             },
             _count: {
@@ -33,8 +40,11 @@ export const getProfile = async (
     if (!pet) {
         throw new HttpError('Pet not found', 404);
     }
+
+    let isFollowing = false;
+
     if (currentUserId) {
-        const isFollowing = await prisma.follow.findUnique({
+        const follow = await prisma.follow.findUnique({
             where: {
                 followerId_followingId: {
                     followerId: currentUserId,
@@ -42,17 +52,8 @@ export const getProfile = async (
                 },
             },
         });
-        return {
-            id: pet.id,
-            name: pet.name,
-            followersCount: pet._count.followers,
-            followingCount: pet._count.following,
-            isFollowing: !!isFollowing,
-            image: pet.image,
-            bio: pet.bio,
-            createdAt: pet.createdAt,
-            posts: pet.posts,
-        };
+
+        isFollowing = !!follow;
     }
 
     return {
@@ -60,9 +61,39 @@ export const getProfile = async (
         name: pet.name,
         followersCount: pet._count.followers,
         followingCount: pet._count.following,
+        isFollowing,
         image: pet.image,
         bio: pet.bio,
         createdAt: pet.createdAt,
         posts: pet.posts,
     };
+};
+
+export const updateProfileService = async (
+    profileUserId: number,
+    updateData: any,
+) => {
+    const { image } = updateData;
+    const pet = await prisma.pet.findUnique({
+        where: { id: profileUserId },
+    });
+
+    if (!pet) {
+        throw new HttpError('Pet not found', 404);
+    }
+    if (image && pet.image) {
+        const publicId = getPublicIdFromUrl(pet.image);
+
+        await cloudinary.uploader.destroy(publicId);
+    }
+    const updatedPet = await prisma.pet.update({
+        where: { id: profileUserId },
+        data: {
+            ...updateData,
+            image: image ? image : pet.image,
+        },
+    });
+    return updatedPet;
+
+    throw new HttpError('Pet not found', 404);
 };

@@ -42,7 +42,6 @@ export const myPets = async (
     try {
         const pets = await getMyPets(req.user!.id);
         res.json(pets);
-        console.log(pets);
     } catch (error: any) {
         next(error);
     }

@@ -2,6 +2,25 @@ import cloudinary, { getPublicIdFromUrl } from '../config/cloudinary';
 import { prisma } from '../config/prisma';
 import { HttpError } from '../utils/httpError';
 
+export const getPostById = async (postId: number) => {
+    const post = await prisma.post.findUnique({
+        where: { id: postId },
+        include: {
+            likes: {
+                select: {
+                    petId: true,
+                },
+            },
+            pet: true,
+            _count: { select: { likes: true, comments: true } },
+        },
+    });
+    if (!post) {
+        throw new HttpError('Post not found', 404);
+    }
+    return post;
+};
+
 export const createPost = async (
     petId: number,
     ownerId: number,
@@ -27,7 +46,7 @@ export const createPost = async (
     });
 };
 
-export const getFeed = async (petId?: number, cursor?: string) => {
+export const getFeed = async (cursor?: string, petId?: number) => {
     const posts = await prisma.post.findMany({
         take: 10,
 
@@ -70,7 +89,7 @@ export const getFeed = async (petId?: number, cursor?: string) => {
 
     return posts.map((post) => ({
         ...post,
-        likedByUser: post.likes.length > 0,
+        likedByUser: post.likes.some((like) => like.petId === petId),
     }));
 };
 

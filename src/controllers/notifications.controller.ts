@@ -7,10 +7,14 @@ export const getNotifications = async (
     next: NextFunction,
 ) => {
     try {
-        const userId = parseInt(req.params.userId);
-
-        const notifications =
-            await notificationService.getUserNotifications(userId);
+        const userId = parseInt(req.params.petId);
+        const limit = req.query.limit
+            ? parseInt(String(req.query.limit))
+            : undefined;
+        const notifications = await notificationService.getUserNotifications(
+            userId,
+            limit,
+        );
 
         res.json({
             success: true,

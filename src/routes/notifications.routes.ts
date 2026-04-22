@@ -5,7 +5,7 @@ import { attachPet } from '../middlewares/attachPet';
 const router = Router();
 
 router.use(attachPet);
-router.get('/:userId', notificationController.getNotifications);
+router.get('/:petId', notificationController.getNotifications);
 
 router.patch('/:id/read', notificationController.readNotification);
 

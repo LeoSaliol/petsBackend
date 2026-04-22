@@ -3,9 +3,24 @@ import {
     createPost,
     deletePost,
     getFeed,
+    getPostById,
     getPostsByPet,
     updatePost,
 } from '../services/post.services';
+
+export const getPost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const id = Number(req.params.id);
+        const post = await getPostById(id);
+        res.json(post);
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const create = async (
     req: Request,
@@ -71,8 +86,9 @@ export const remove = async (
     next: NextFunction,
 ) => {
     try {
-        const postId = Number(req.params.postId);
-        const result = await deletePost(postId);
+        const id = Number(req.params.id);
+
+        const result = await deletePost(id);
         res.json(result);
     } catch (error) {
         next(error);
@@ -85,12 +101,12 @@ export const update = async (
     next: NextFunction,
 ) => {
     try {
-        const postId = Number(req.params.id);
+        const id = Number(req.params.id);
         const { content } = req.body;
 
         const image = (req.file as any)?.path;
 
-        const post = await updatePost(postId, content, image);
+        const post = await updatePost(id, content, image);
 
         res.json(post);
     } catch (error) {

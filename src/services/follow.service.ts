@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma';
 import { HttpError } from '../utils/httpError';
+import { createNotification } from './notifications.services';
 
 export const toggleFollow = async (followerId: number, followingId: number) => {
     if (followerId === followingId) {
@@ -28,7 +29,13 @@ export const toggleFollow = async (followerId: number, followingId: number) => {
             followingId,
         },
     });
+    if (followerId !== followingId) {
+        const actor = await prisma.pet.findUnique({
+            where: { id: followerId },
+        });
 
+        await createNotification(followingId, actor?.id || 0, 'FOLLOW');
+    }
     return { following: true };
 };
 

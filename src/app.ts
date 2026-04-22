@@ -30,6 +30,7 @@ app.use('/posts', postRoutes);
 app.get('/me', authMiddleware, attachPet, (req, res) => {
     res.json({
         message: 'Access granted',
+        petId: req.petId,
         user: {
             id: req.user!.id,
         },

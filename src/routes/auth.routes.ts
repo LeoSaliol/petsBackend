@@ -9,6 +9,7 @@ router.post('/register', validate(registerSchema), register);
 router.post('/login', validate(loginSchema), login);
 router.post('/logout', (req, res) => {
     res.clearCookie('token');
+    res.clearCookie('petId');
     res.json({ message: 'Logged out successfully' });
 });
 

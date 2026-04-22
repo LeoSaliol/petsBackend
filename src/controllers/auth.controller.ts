@@ -32,7 +32,15 @@ export const login = async (
             httpOnly: true,
             secure: false,
             sameSite: 'lax',
+            maxAge: 1000 * 60 * 60 * 24 * 27,
         });
+        res.cookie('petId', data.petId, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 1000 * 60 * 60 * 24 * 27,
+        });
+
         res.json({
             success: true,
             data,

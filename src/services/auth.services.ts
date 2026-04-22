@@ -36,7 +36,6 @@ export const registerUser = async ({
             password: hashedPassword,
         },
     });
-    console.log('user', user);
 
     return user;
 };
@@ -44,8 +43,6 @@ export const registerUser = async ({
 //* Login service
 
 export const loginUser = async ({ email, password }: LoginInput) => {
-    console.log('aca entra?');
-    console.log({ email, password });
     const user = await prisma.user.findUnique({
         where: { email },
     });
@@ -59,6 +56,9 @@ export const loginUser = async ({ email, password }: LoginInput) => {
     if (!isValidPassword) {
         throw new HttpError('Invalid credentials', 401);
     }
+    const pets = await prisma.pet.findMany({
+        where: { ownerId: user.id },
+    });
 
     const token = jwt.sign(
         { userId: user.id },
@@ -68,6 +68,8 @@ export const loginUser = async ({ email, password }: LoginInput) => {
 
     return {
         token,
+        petId: pets[0]?.id,
+
         user: {
             id: user.id,
             name: user.name,
