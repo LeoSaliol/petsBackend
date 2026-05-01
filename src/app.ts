@@ -9,6 +9,7 @@ import commentRoutes from './routes/comment.routes';
 import followRoutes from './routes/follow.routes';
 import userRoutes from './routes/user.routes';
 import notificationRoutes from './routes/notifications.routes';
+import conversationRoutes from './routes/conversation.routes';
 import { errorMidleware } from './middlewares/error.middleware';
 import cookieParser from 'cookie-parser';
 import { attachPet } from './middlewares/attachPet';
@@ -17,7 +18,7 @@ const app = express();
 // app.use(cors());
 app.use(
     cors({
-        origin: 'http://localhost:5173', // 👈 tu frontend
+        origin: process.env.FRONTEND_URL,
         credentials: true,
     }),
 );
@@ -46,5 +47,6 @@ app.use('/comments', commentRoutes);
 app.use('/follow', followRoutes);
 app.use('/users', userRoutes);
 app.use('/notifications', notificationRoutes);
+app.use('/conversations', conversationRoutes);
 app.use(errorMidleware);
 export default app;

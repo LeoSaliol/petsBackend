@@ -12,6 +12,7 @@ export const getProfile = async (
         where: { id: profileUserId },
         select: {
             id: true,
+            ownerId: true,
             name: true,
             image: true,
             bio: true,
@@ -58,6 +59,7 @@ export const getProfile = async (
 
     return {
         id: pet.id,
+        ownerId: pet.ownerId,
         name: pet.name,
         followersCount: pet._count.followers,
         followingCount: pet._count.following,
