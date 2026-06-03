@@ -14,7 +14,11 @@ import favoriteRoutes from './routes/favorite.routes';
 import { errorMidleware } from './middlewares/error.middleware';
 import cookieParser from 'cookie-parser';
 import { attachPet } from './middlewares/attachPet';
-import { authLimiter, generalLimiter, createPostLimiter } from './middlewares/rateLimit.middleware';
+import {
+    authLimiter,
+    generalLimiter,
+    createPostLimiter,
+} from './middlewares/rateLimit.middleware';
 import passport from './config/passport';
 import { prisma } from './config/prisma';
 
@@ -24,7 +28,18 @@ app.use(passport.initialize());
 
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL,
+        origin: (origin, callback) => {
+            const allowed = [
+                'http://localhost:4321',
+                process.env.FRONTEND_URL,
+            ].filter(Boolean);
+
+            if (!origin || allowed.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
     }),
 );
