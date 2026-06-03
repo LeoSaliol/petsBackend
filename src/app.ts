@@ -23,7 +23,7 @@ import passport from './config/passport';
 import { prisma } from './config/prisma';
 
 const app = express();
-
+app.set('trust proxy', 1);
 app.use(passport.initialize());
 
 app.use(
