@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const like_controller_1 = require("../controllers/like.controller");
+const attachPet_1 = require("../middlewares/attachPet");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authMiddleware, attachPet_1.attachPet);
+router.post('/:postId', like_controller_1.byPost);
+router.post('/toggle/:postId', like_controller_1.toggle);
+exports.default = router;

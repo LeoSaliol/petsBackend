@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { getProfile, updateProfileService } from '../services/user.services';
+import { getProfile, updateProfileService, deleteUserAccountService } from '../services/user.services';
 
 export const profile = async (
     req: Request,
@@ -33,6 +33,26 @@ export const updateProfile = async (
         const result = await updateProfileService(profileUserId, updateData);
 
         res.json(result);
+    } catch (error: any) {
+        next(error);
+    }
+};
+
+export const deleteAccount = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const userId = req.user!.id;
+
+        await deleteUserAccountService(userId);
+
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
+        res.clearCookie('petId');
+
+        res.json({ success: true, message: 'Cuenta eliminada exitosamente' });
     } catch (error: any) {
         next(error);
     }

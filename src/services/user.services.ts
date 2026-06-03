@@ -96,6 +96,59 @@ export const updateProfileService = async (
         },
     });
     return updatedPet;
+};
 
-    throw new HttpError('Pet not found', 404);
+export const deleteUserAccountService = async (userId: number) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { pets: true },
+    });
+
+    if (!user) {
+        throw new HttpError('User not found', 404);
+    }
+
+    for (const pet of user.pets) {
+        const petPosts = await prisma.post.findMany({
+            where: { petId: pet.id },
+            select: { id: true, image: true },
+        });
+
+        for (const post of petPosts) {
+            if (post.image) {
+                const publicId = getPublicIdFromUrl(post.image);
+                if (publicId) {
+                    await cloudinary.uploader.destroy(publicId).catch(() => {});
+                }
+            }
+        }
+
+        await prisma.notification.deleteMany({ where: { petId: pet.id } });
+
+        await prisma.follow.deleteMany({
+            where: {
+                OR: [{ followerId: pet.id }, { followingId: pet.id }],
+            },
+        });
+
+        await prisma.post.deleteMany({ where: { petId: pet.id } });
+
+        await prisma.pet.delete({ where: { id: pet.id } });
+    }
+
+    await prisma.notification.deleteMany({ where: { userId } });
+
+    const orphanConversations = await prisma.conversation.findMany({
+        where: {
+            participants: { none: {} },
+        },
+    });
+
+    for (const conv of orphanConversations) {
+        await prisma.conversation.delete({ where: { id: conv.id } });
+    }
+
+    await prisma.user.delete({ where: { id: userId } });
+
+    return { success: true };
 };

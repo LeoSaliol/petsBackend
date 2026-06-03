@@ -11,11 +11,14 @@ export const toggle = async (
     next: NextFunction,
 ) => {
     try {
+        const followerId = req.petId;
+        if (!followerId) return res.status(400).json({ message: 'No pet selected' });
+
         const followingId = Number(req.params.petId);
 
         const result = await toggleFollow(
-            req.petId!, //* usuario logueado
-            followingId, //* usuario a seguir
+            followerId,
+            followingId,
         );
 
         res.json(result);

@@ -8,18 +8,21 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  avatar    String?
-  lastSeen  DateTime?
-  createdAt DateTime  @default(now())
+  id               Int        @id @default(autoincrement())
+  name             String
+  email            String     @unique
+  password         String
+  avatar           String?
+  lastSeen         DateTime?
+  refreshToken     String?
+  resetToken       String?    @unique
+  resetTokenExpiry DateTime?
+  provider         String?
+  providerId       String?
+  createdAt        DateTime   @default(now())
 
   notifications Notification[]
   pets          Pet[]
-  conversations ConversationParticipant[]
-  sentMessages  Message[]
 }
 
 model Pet {
@@ -37,25 +40,31 @@ model Pet {
 
   likes    Like[]
   comments Comment[]
+  favorites Favorite[]
 
   following Follow[] @relation("Following")
   followers Follow[] @relation("Followers")
 
   notifications Notification[]
+
+  conversations ConversationParticipant[]
+  sentMessages  Message[]
 }
 
 model Post {
   id          Int      @id @default(autoincrement())
   image       String
   description String?
+  location    String?
   createdAt   DateTime @default(now())
   content     String?
-  pet         Pet      @relation(fields: [petId], references: [id])
+  pet         Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
   petId       Int
 
   likes         Like[]
   comments      Comment[]
   tags          PostTag[]
+  favorites     Favorite[]
   notifications Notification[]
 }
 
@@ -81,6 +90,20 @@ model Comment {
 
   post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId Int
+}
+
+model Favorite {
+  id Int @id @default(autoincrement())
+
+  pet   Pet @relation(fields: [petId], references: [id])
+  petId Int
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([petId, postId])
 }
 
 model Follow {
@@ -134,13 +157,13 @@ model Conversation {
 
 model ConversationParticipant {
   id             Int          @id @default(autoincrement())
-  user           User         @relation(fields: [userId], references: [id])
-  userId         Int
+  pet            Pet          @relation(fields: [petId], references: [id], onDelete: Cascade)
+  petId          Int
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId Int
   joinedAt       DateTime     @default(now())
 
-  @@unique([userId, conversationId])
+  @@unique([petId, conversationId])
 }
 
 model Message {
@@ -148,8 +171,8 @@ model Message {
   content        String
   createdAt      DateTime     @default(now())
   isRead         Boolean      @default(false)
-  sender         User         @relation(fields: [senderId], references: [id])
-  senderId       Int
+  sender         Pet          @relation(fields: [senderPetId], references: [id], onDelete: Cascade)
+  senderPetId    Int
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId Int
 }

@@ -12,13 +12,20 @@ export const attachPet = async (
         }
         const userId = req.user.id;
 
+        if (req.petId) {
+            const pet = await prisma.pet.findFirst({
+                where: { id: req.petId, ownerId: userId },
+            });
+            if (pet) return next();
+        }
+
         const pet = await prisma.pet.findFirst({
             where: { ownerId: userId },
+            orderBy: { id: 'asc' },
         });
-        if (!pet) {
-            return next();
+        if (pet) {
+            req.petId = pet.id;
         }
-        req.petId = pet.id;
 
         next();
     } catch (error) {

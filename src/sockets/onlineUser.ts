@@ -1,14 +1,17 @@
-const onlineUsers = new Map<number, string>();
+const onlinePets = new Map<number, string>();
 
-export function addOnlineUser(userId: number, socketId: string) {
-    onlineUsers.set(userId, socketId);
+export function addOnlinePet(petId: number, socketId: string) {
+    onlinePets.set(petId, socketId);
 }
-export function removeOnlineUser(userId: number) {
-    onlineUsers.delete(userId);
+
+export function removeOnlinePet(petId: number) {
+    onlinePets.delete(petId);
 }
-export function isUserOnline(userId: number): boolean {
-    return onlineUsers.has(userId);
+
+export function isPetOnline(petId: number): boolean {
+    return onlinePets.has(petId);
 }
-export function getOnlineUserIds(): number[] {
-    return Array.from(onlineUsers.keys());
+
+export function getOnlinePetIds(): number[] {
+    return Array.from(onlinePets.keys());
 }

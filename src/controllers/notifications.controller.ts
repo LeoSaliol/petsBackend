@@ -43,3 +43,31 @@ export const readNotification = async (
         next(error);
     }
 };
+
+export const readAllNotifications = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const petId = parseInt(req.params.petId);
+        const result = await notificationService.markAllAsRead(petId);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getUnreadCount = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const petId = parseInt(req.params.petId);
+        const count = await notificationService.getUnreadNotificationsCount(petId);
+        res.json({ success: true, data: count });
+    } catch (error) {
+        next(error);
+    }
+};

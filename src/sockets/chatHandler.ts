@@ -2,17 +2,17 @@ import { Server, Socket } from 'socket.io';
 import { prisma } from '../config/prisma';
 
 export function handleChatEvents(socket: Socket, io: Server) {
-    const userId = socket.data.userId;
+    const petId = socket.data.petId;
 
     socket.on('joinConversations', async () => {
         try {
             const participations =
                 await prisma.conversationParticipant.findMany({
-                    where: { userId },
+                    where: { petId },
                     select: { conversationId: true },
                 });
             participations.forEach(({ conversationId }) => {
-                socket.join(`conv_${conversationId}`); // 👈 consistente
+                socket.join(`conv_${conversationId}`);
             });
         } catch (error) {
             socket.emit('error', {
@@ -23,28 +23,24 @@ export function handleChatEvents(socket: Socket, io: Server) {
 
     socket.on(
         'startConversation',
-        async ({ targetUserId }: { targetUserId: number }) => {
+        async ({ targetPetId }: { targetPetId: number }) => {
             try {
                 const existingConversation =
                     await prisma.conversation.findFirst({
                         where: {
                             AND: [
-                                { participants: { some: { userId } } },
-                                {
-                                    participants: {
-                                        some: { userId: targetUserId },
-                                    },
-                                },
+                                { participants: { some: { petId } } },
+                                { participants: { some: { petId: targetPetId } } },
                             ],
                         },
                         include: {
                             participants: {
                                 include: {
-                                    user: {
+                                    pet: {
                                         select: {
                                             id: true,
                                             name: true,
-                                            avatar: true,
+                                            image: true,
                                         },
                                     },
                                 },
@@ -52,14 +48,18 @@ export function handleChatEvents(socket: Socket, io: Server) {
                             messages: {
                                 orderBy: { createdAt: 'asc' },
                                 take: 30,
+                                include: {
+                                    sender: {
+                                        select: { id: true, name: true, image: true },
+                                    },
+                                },
                             },
                         },
                     });
 
                 if (existingConversation) {
                     socket.join(`conv_${existingConversation.id}`);
-                    // ✅ nombre correcto + emitir por room
-                    io.to(String(userId)).emit(
+                    io.to(String(petId)).emit(
                         'conversationReady',
                         existingConversation,
                     );
@@ -69,34 +69,35 @@ export function handleChatEvents(socket: Socket, io: Server) {
                 const conversation = await prisma.conversation.create({
                     data: {
                         participants: {
-                            create: [{ userId }, { userId: targetUserId }],
+                            create: [{ petId }, { petId: targetPetId }],
                         },
                     },
                     include: {
                         participants: {
                             include: {
-                                user: {
+                                pet: {
                                     select: {
                                         id: true,
                                         name: true,
-                                        avatar: true,
+                                        image: true,
                                     },
                                 },
                             },
                         },
-                        messages: true,
+                        messages: {
+                            include: {
+                                sender: {
+                                    select: { id: true, name: true, image: true },
+                                },
+                            },
+                        },
                     },
                 });
 
                 socket.join(`conv_${conversation.id}`);
-                io.to(String(targetUserId)).socketsJoin(
-                    `conv_${conversation.id}`,
-                );
-                io.to(String(userId)).emit('conversationReady', conversation);
-                io.to(String(targetUserId)).emit(
-                    'newConversation',
-                    conversation,
-                );
+                io.to(String(targetPetId)).socketsJoin(`conv_${conversation.id}`);
+                io.to(String(petId)).emit('conversationReady', conversation);
+                io.to(String(targetPetId)).emit('newConversation', conversation);
             } catch (error) {
                 socket.emit('error', {
                     message: 'Error al iniciar la conversación',
@@ -119,7 +120,7 @@ export function handleChatEvents(socket: Socket, io: Server) {
                 const participant =
                     await prisma.conversationParticipant.findUnique({
                         where: {
-                            userId_conversationId: { userId, conversationId },
+                            petId_conversationId: { petId, conversationId },
                         },
                     });
 
@@ -131,10 +132,10 @@ export function handleChatEvents(socket: Socket, io: Server) {
                 }
 
                 const message = await prisma.message.create({
-                    data: { content, senderId: userId, conversationId },
+                    data: { content, senderPetId: petId, conversationId },
                     include: {
                         sender: {
-                            select: { id: true, name: true, avatar: true },
+                            select: { id: true, name: true, image: true },
                         },
                     },
                 });
@@ -143,7 +144,7 @@ export function handleChatEvents(socket: Socket, io: Server) {
                     data: { updatedAt: new Date() },
                 });
 
-                io.to(`conv_${conversationId}`).emit('newMessage', message); // 👈 consistente
+                io.to(`conv_${conversationId}`).emit('newMessage', message);
             } catch (error) {
                 socket.emit('error', { message: 'Error al enviar el mensaje' });
             }
@@ -157,7 +158,7 @@ export function handleChatEvents(socket: Socket, io: Server) {
                 await prisma.message.updateMany({
                     where: {
                         conversationId,
-                        senderId: { not: userId },
+                        senderPetId: { not: petId },
                         isRead: false,
                     },
                     data: { isRead: true },
@@ -165,7 +166,7 @@ export function handleChatEvents(socket: Socket, io: Server) {
 
                 socket.to(`conv_${conversationId}`).emit('messagesRead', {
                     conversationId,
-                    readBy: userId,
+                    readBy: petId,
                 });
             } catch (error) {
                 socket.emit('error', { message: 'Error al marcar como leído' });
@@ -191,14 +192,14 @@ export function handleChatEvents(socket: Socket, io: Server) {
                     take: PAGE_SIZE,
                     include: {
                         sender: {
-                            select: { id: true, name: true, avatar: true },
+                            select: { id: true, name: true, image: true },
                         },
                     },
                 });
 
                 socket.emit('messageHistory', {
                     conversationId,
-                    messages: messages.reverse(),
+                    messages,
                     page,
                 });
             } catch (error) {

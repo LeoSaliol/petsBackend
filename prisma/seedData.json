@@ -1,0 +1,156 @@
+[
+    {
+        "name": "Martín López",
+        "email": "martin.lopez@example.com",
+        "password": "password3",
+        "pets": [
+            {
+                "name": "Kira",
+                "bio": "Border Collie llena de energía.",
+                "image": "https://images.dog.ceo/breeds/collie-border/n02106166_355.jpg",
+                "posts": [
+                    {
+                        "image": "https://images.dog.ceo/breeds/collie-border/n02106166_355.jpg",
+                        "description": "Entrenando nuevos trucos.",
+                        "location": "Melbourne, Australia"
+                    },
+                    {
+                        "image": "https://images.dog.ceo/breeds/collie-border/n02106166_4348.jpg",
+                        "description": "Corriendo por el parque.",
+                        "location": "Wellington, Nueva Zelanda"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Camila Torres",
+        "email": "camila.torres@example.com",
+        "password": "password6",
+        "pets": [
+            {
+                "name": "Mia",
+                "bio": "Gata persa muy tranquila.",
+                "image": "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
+                "posts": [
+                    {
+                        "image": "https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg",
+                        "description": "Relajándome en casa.",
+                        "location": "Venecia, Italia"
+                    },
+                    {
+                        "image": "https://cdn2.thecatapi.com/images/MTY3ODIyMQ.jpg",
+                        "description": "Hora de dormir.",
+                        "location": "Florencia, Italia"
+                    }
+                ]
+            },
+            {
+                "name": "Coco",
+                "bio": "Conejo curioso y juguetón.",
+                "image": "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308",
+                "posts": [
+                    {
+                        "image": "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308",
+                        "description": "Explorando el jardín.",
+                        "location": "Bruselas, Bélgica"
+                    },
+                    {
+                        "image": "https://images.unsplash.com/photo-1585110396048-d9477e4c8b65",
+                        "description": "Buscando zanahorias.",
+                        "location": "Ámsterdam, Países Bajos"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Julieta Castro",
+        "email": "julieta.castro@example.com",
+        "password": "password8",
+        "pets": [
+            {
+                "name": "Kiwi",
+                "bio": "Loro muy hablador.",
+                "image": "https://images.unsplash.com/photo-1552728089-57bdde30beb3",
+                "posts": [
+                    {
+                        "image": "https://images.unsplash.com/photo-1552728089-57bdde30beb3",
+                        "description": "Aprendiendo nuevas palabras.",
+                        "location": "Río de Janeiro, Brasil"
+                    },
+                    {
+                        "image": "https://images.unsplash.com/photo-1552728089-57bdde30beb3",
+                        "description": "Observando el paisaje.",
+                        "location": "Lima, Perú"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Federico Díaz",
+        "email": "federico.diaz@example.com",
+        "password": "password9",
+        "pets": [
+            {
+                "name": "Nala",
+                "bio": "Shiba Inu aventurera.",
+                "image": "https://images.dog.ceo/breeds/shiba/shiba-13.jpg",
+                "posts": [
+                    {
+                        "image": "https://images.dog.ceo/breeds/shiba/shiba-13.jpg",
+                        "description": "Paseando por la ciudad.",
+                        "location": "Seúl, Corea del Sur"
+                    },
+                    {
+                        "image": "https://images.dog.ceo/breeds/shiba/shiba-18.jpg",
+                        "description": "Disfrutando el atardecer.",
+                        "location": "Busan, Corea del Sur"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Micaela Vega",
+        "email": "micaela.vega@example.com",
+        "password": "password12",
+        "pets": [
+            {
+                "name": "Oliver",
+                "bio": "Gato naranja explorador.",
+                "image": "https://cdn2.thecatapi.com/images/MTY3ODIyMQ.jpg",
+                "posts": [
+                    {
+                        "image": "https://cdn2.thecatapi.com/images/MTY3ODIyMQ.jpg",
+                        "description": "Explorando nuevas calles.",
+                        "location": "Praga, República Checa"
+                    },
+                    {
+                        "image": "https://cdn2.thecatapi.com/images/bpc.jpg",
+                        "description": "Observando el río.",
+                        "location": "Budapest, Hungría"
+                    }
+                ]
+            },
+            {
+                "name": "Loki",
+                "bio": "Corgi simpático y glotón.",
+                "image": "https://images.dog.ceo/breeds/corgi-cardigan/n02113186_1030.jpg",
+                "posts": [
+                    {
+                        "image": "https://images.dog.ceo/breeds/corgi-cardigan/n02113186_1030.jpg",
+                        "description": "Esperando premios.",
+                        "location": "Dublín, Irlanda"
+                    },
+                    {
+                        "image": "https://images.dog.ceo/breeds/corgi-cardigan/n02113186_1118.jpg",
+                        "description": "Jugando en el césped.",
+                        "location": "Edimburgo, Escocia"
+                    }
+                ]
+            }
+        ]
+    }
+]

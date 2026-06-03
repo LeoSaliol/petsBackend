@@ -1,10 +1,10 @@
-import app from './app';
 import 'dotenv/config';
+import app from './app';
 import http from 'http';
 import { Server } from 'socket.io';
 import { applySocketAuthMiddleware } from './middlewares/socket.middleware';
 import { handleChatEvents } from './sockets/chatHandler';
-import { removeOnlineUser } from './sockets/onlineUser';
+import { addOnlinePet, removeOnlinePet } from './sockets/onlineUser';
 import { prisma } from './config/prisma';
 
 const PORT = process.env.PORT || 2000;
@@ -21,25 +21,36 @@ export const io = new Server(server, {
 applySocketAuthMiddleware(io);
 
 io.on('connection', (socket) => {
-    const userId = socket.data.userId;
-    console.log('🟢 Usuario conectado', userId);
-    socket.join(String(userId));
-    io.emit('userOnline', { userId });
-    socket.on('getOnlineUsers', () => {
-        const { getOnlineUserIds } = require('./sockets/onlineUser');
-        socket.emit('onlineUsers', { userIds: getOnlineUserIds() });
+    const petId = socket.handshake.auth.petId;
+    const userId = socket.handshake.auth.userId;
+    socket.data.userId = userId;
+    socket.data.petId = petId;
+
+    if (petId) {
+        addOnlinePet(petId, socket.id);
+        socket.join(String(petId));
+        io.emit('petOnline', { petId });
+    }
+
+    console.log('🟢 Pet conectado', petId);
+
+    socket.on('getOnlinePets', () => {
+        const { getOnlinePetIds } = require('./sockets/onlineUser');
+        socket.emit('onlinePets', { petIds: getOnlinePetIds() });
     });
 
     handleChatEvents(socket, io);
-    socket.on('disconnect', async () => {
-        removeOnlineUser(userId);
 
-        await prisma.user.update({
-            where: { id: userId },
-            data: { lastSeen: new Date() },
-        });
-        io.emit('userOffline', { userId });
-        console.log('🔴 Usuario desconectado', userId);
+    socket.on('disconnect', async () => {
+        if (petId) {
+            removeOnlinePet(petId);
+            await prisma.user.update({
+                where: { id: userId },
+                data: { lastSeen: new Date() },
+            });
+            io.emit('petOffline', { petId });
+            console.log('🔴 Pet desconectado', petId);
+        }
     });
 });
 

@@ -25,8 +25,8 @@ export const createPost = async (
     petId: number,
     ownerId: number,
     content?: string,
-
     image?: string,
+    location?: string,
 ) => {
     //-- verifica que la mascota sea del usuario
     const pet = await prisma.pet.findFirst({
@@ -42,11 +42,30 @@ export const createPost = async (
             content,
             image: image!,
             petId,
+            location,
         },
     });
 };
 
 export const getFeed = async (cursor?: string, petId?: number) => {
+    let petIds: number[] = [];
+
+    if (petId) {
+        const pet = await prisma.pet.findUnique({
+            where: { id: petId },
+            include: {
+                following: {
+                    select: { followingId: true },
+                },
+            },
+        });
+
+        if (pet) {
+            const followingIds = pet.following.map((f) => f.followingId);
+            petIds = [petId, ...followingIds];
+        }
+    }
+
     const posts = await prisma.post.findMany({
         take: 10,
 
@@ -54,6 +73,14 @@ export const getFeed = async (cursor?: string, petId?: number) => {
             skip: 1,
             cursor: {
                 id: Number(cursor),
+            },
+        }),
+
+        ...(petIds.length > 0 && {
+            where: {
+                petId: {
+                    in: petIds,
+                },
             },
         }),
 
@@ -76,28 +103,66 @@ export const getFeed = async (cursor?: string, petId?: number) => {
                     comments: true,
                 },
             },
-            likes: {
-                where: {
-                    petId: petId,
+            ...(petId && {
+                likes: {
+                    where: { petId },
+                    select: { petId: true },
                 },
-                select: {
-                    petId: true,
+                favorites: {
+                    where: { petId },
+                    select: { petId: true },
                 },
-            },
+            }),
         },
     });
 
     return posts.map((post) => ({
         ...post,
-        likedByUser: post.likes.some((like) => like.petId === petId),
+        likedByUser: petId ? post.likes?.some((like) => like.petId === petId) : false,
+        favoritedByUser: petId ? post.favorites?.some((f) => f.petId === petId) : false,
     }));
 };
 
-export const getPostsByPet = async (petId: number) => {
-    return prisma.post.findMany({
+export const getPostsByPet = async (petId: number, requestingPetId?: number) => {
+    const posts = await prisma.post.findMany({
         where: { petId },
         orderBy: { createdAt: 'desc' },
+        include: {
+            pet: {
+                select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                },
+            },
+            _count: { select: { likes: true, comments: true } },
+            ...(requestingPetId && {
+                likes: {
+                    where: { petId: requestingPetId },
+                    select: { petId: true },
+                },
+                favorites: {
+                    where: { petId: requestingPetId },
+                    select: { petId: true },
+                },
+            }),
+        },
     });
+
+    return posts.map((post) => ({
+        id: post.id,
+        image: post.image,
+        content: post.content,
+        description: post.description,
+        location: post.location,
+        createdAt: post.createdAt,
+        petId: post.petId,
+        pet: post.pet,
+        likesCount: post._count.likes,
+        commentsCount: post._count.comments,
+        isLiked: requestingPetId ? post.likes?.some((l: any) => l.petId === requestingPetId) : false,
+        isFavorited: requestingPetId ? post.favorites?.some((f: any) => f.petId === requestingPetId) : false,
+    }));
 };
 
 export const deletePost = async (postId: number) => {
@@ -119,6 +184,7 @@ export const updatePost = async (
     postId: number,
     content?: string,
     image?: string,
+    location?: string,
 ) => {
     const post = await prisma.post.findUnique({
         where: { id: postId },
@@ -139,6 +205,7 @@ export const updatePost = async (
         data: {
             content,
             image: image ?? post.image,
+            location: location ?? post.location,
         },
     });
 

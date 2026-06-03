@@ -1,4 +1,3 @@
-import { tr } from 'zod/locales';
 import { prisma } from '../config/prisma';
 import { io } from '../server';
 
@@ -102,7 +101,24 @@ export const getUserNotifications = async (petId: number, limit?: number) => {
         .sort((a, b) => b.latestDate - a.latestDate)
         .slice(0, limit);
 
-    return result;
+    return result.map((notif) => ({
+        id: notif.id,
+        type: notif.type === 'LIKE' ? 'like' : notif.type === 'COMMENT' ? 'comment' : 'follow',
+        message: notif.message,
+        createdAt: notif.createdAt.toISOString(),
+        isRead: notif.isRead,
+        actor: notif.actor
+            ? { id: notif.actor.id, name: notif.actor.name, image: notif.actor.image }
+            : null,
+        actors: (notif.actors || [])
+            .filter((a: any) => a && a.id)
+            .map((a: any) => ({ id: a.id, name: a.name, image: a.image })),
+        postId: notif.postId ?? notif.post?.id ?? undefined,
+        post: notif.post
+            ? { id: notif.post.id, image: notif.post.image }
+            : undefined,
+        count: notif.count,
+    }));
 };
 // export const getUserNotifications = async (petId: number, limit?: number) => {
 //     return prisma.notification.findMany({
@@ -138,4 +154,27 @@ export const markAsRead = async (id: string) => {
             isRead: true,
         },
     });
+};
+
+export const getUnreadNotificationsCount = async (petId: number) => {
+    const count = await prisma.notification.count({
+        where: {
+            petId,
+            isRead: false,
+        },
+    });
+    return count;
+};
+
+export const markAllAsRead = async (petId: number) => {
+    const result = await prisma.notification.updateMany({
+        where: {
+            petId,
+            isRead: false,
+        },
+        data: {
+            isRead: true,
+        },
+    });
+    return result;
 };

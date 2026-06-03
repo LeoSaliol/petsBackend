@@ -28,7 +28,7 @@ export const create = async (
     next: NextFunction,
 ) => {
     try {
-        const { petId, content } = req.body;
+        const { petId, content, location } = req.body;
 
         const image = (req.file as any)?.path;
 
@@ -43,6 +43,7 @@ export const create = async (
             req.user!.id,
             content,
             image,
+            location,
         );
 
         res.status(201).json(post);
@@ -60,7 +61,7 @@ export const feed = async (req: Request, res: Response, next: NextFunction) => {
             petId ? Number(petId) : undefined,
         );
 
-        res.json(posts);
+        res.json({ success: true, data: posts });
     } catch (error: any) {
         next(error);
     }
@@ -73,7 +74,8 @@ export const postsByPet = async (
 ) => {
     try {
         const petId = Number(req.params.petId);
-        const posts = await getPostsByPet(petId);
+        const requestingPetId = req.petId || (req.query.petId ? Number(req.query.petId) : undefined);
+        const posts = await getPostsByPet(petId, requestingPetId);
         res.json(posts);
     } catch (error: any) {
         next(error);
@@ -102,11 +104,11 @@ export const update = async (
 ) => {
     try {
         const id = Number(req.params.id);
-        const { content } = req.body;
+        const { content, location } = req.body;
 
         const image = (req.file as any)?.path;
 
-        const post = await updatePost(id, content, image);
+        const post = await updatePost(id, content, image, location);
 
         res.json(post);
     } catch (error) {
