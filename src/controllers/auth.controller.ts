@@ -127,20 +127,16 @@ export const resetPassword = async (
     try {
         const { token, password } = req.body;
         if (!token || !password) {
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: 'Token y contraseña requeridos',
-                });
+            return res.status(400).json({
+                success: false,
+                message: 'Token y contraseña requeridos',
+            });
         }
         if (password.length < 6) {
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: 'La contraseña debe tener al menos 6 caracteres',
-                });
+            return res.status(400).json({
+                success: false,
+                message: 'La contraseña debe tener al menos 6 caracteres',
+            });
         }
         await authService.resetPassword(token, password);
         res.json({
@@ -163,10 +159,15 @@ export const logout = async (
         if (userId) {
             await authService.logoutUser(userId);
         }
-
-        res.clearCookie('accessToken');
-        res.clearCookie('refreshToken');
-        res.clearCookie('petId');
+        const isProduction = process.env.NODE_ENV === 'production';
+        const cookieOptions = {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+        } as const;
+        res.clearCookie('accessToken', cookieOptions);
+        res.clearCookie('refreshToken', cookieOptions);
+        res.clearCookie('petId', cookieOptions);
 
         res.json({
             success: true,
