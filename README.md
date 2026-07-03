@@ -1,323 +1,358 @@
 # PetSocial API
 
-Backend API para una red social donde usuarios pueden registrarte, crear mascotas, publicar contenido, seguir a otros usuarios, dar like a publicaciones y comentar.
+**PetSocial** es la API backend de **Michigram**, una red social para mascotas que permite a los usuarios crear perfiles para sus animales, compartir publicaciones con imágenes, seguir a otras mascotas, dar me gusta, comentar, guardar favoritos y chatear en tiempo real.
 
-Construido con:
-
-- Node.js
-- Express.js
-- TypeScript
-- Prisma ORM
-- PostgreSQL
-- JWT Authentication
-- Zod Validation
-- Socket.IO (mensajería en tiempo real)
-- Cloudinary (almacenamiento de imágenes)
+> Stack: Node.js · Express.js · TypeScript · Prisma ORM · PostgreSQL · Socket.IO · JWT · Cloudinary
 
 ---
 
-## Características
+## ✨ Funcionalidades
 
-### Autenticación
-
-- Registro de usuarios con validación de email
-- Login con JWT (access token + refresh token)
-- Cookies HttpOnly seguras
-- Renovación automática de tokens
-- Logout que limpia el refresh token
+### Autenticación y Seguridad
+- Registro e inicio de sesión con email y contraseña (bcrypt + JWT)
+- Tokens de acceso (15 min) y renovación (7 días) almacenados en cookies HttpOnly
+- Integración con OAuth 2.0 (Google y Facebook) via Passport.js
+- Recuperación de contraseña por correo electrónico (Nodemailer)
+- Rate limiting escalonado: autenticación (20/15 min), creación de posts (10/min), general (200/min)
+- Validación de datos con Zod
 
 ### Gestión de Mascotas
-
-- Crear, editar y eliminar mascotas
-- Cada mascota tiene: nombre, bio, imagen de perfil
-- Multiple mascotas por usuario
-- Sistema de seguimiento entre mascotas
+- Creación de múltiples perfiles de mascota por usuario
+- Cada mascota incluye: nombre, biografía, imagen de perfil (Cloudinary)
+- Selección y cambio de mascota activa
+- Sistema de seguimiento entre mascotas (follow/unfollow)
 
 ### Publicaciones
-
-- Crear posts con imágenes (Cloudinary)
-- Descripción y contenido en publicaciones
-- Sistema de likes (toggle)
-- Sistema de comentarios
-- Tags de mascotas en posts
-- Feed con cursor-based pagination
+- Creación de posts con imágenes alojadas en Cloudinary
+- Contenido textual, descripción y ubicación
+- Likes con toggle y notificación en tiempo real
+- Comentarios con edición y eliminación
+- Etiquetado de mascotas en publicaciones
+- Feed con paginación basada en cursor (10 posts por página)
+- Posts propios y de mascotas seguidas
 
 ### Interacciones Sociales
+- Follow/unfollow entre mascotas
+- Contadores de seguidores y seguidos en cada perfil
+- Favoritos (bookmarks) para guardar publicaciones
+- Notificaciones agrupadas en tiempo real (like, comentario, follow)
 
-- Follow/Unfollow entre mascotas
-- Contador de followers y following
-- Notificaciones en tiempo real:
-    - Nuevo follower
-    - Like en post
-    - Comentario en post
-    - Etiquetado en post
-
-### Mensajería
-
-- Conversaciones en tiempo real (Socket.IO)
-- Mensajería instantánea entre usuarios
-- Historial de conversaciones
-- Estado de lectura de mensajes
-
-### Seguridad
-
-- Rate limiting por endpoints
-- Validación de requests con Zod
-- Middleware de autenticación
-- Manejo global de errores
-- CORS configurado
+### Mensajería en Tiempo Real
+- Conversaciones instantáneas via Socket.IO
+- Historial de mensajes con paginación (30 por página)
+- Indicadores de lectura y estado en línea
+- Salas de conversación por par de mascotas
 
 ---
 
-## Estructura del Proyecto
+## 🏗️ Arquitectura
+
+El proyecto sigue una arquitectura en capas **MVC con capa de servicios**:
+
+```
+Cliente (React SPA)
+    │
+    ▼
+    Routes              → Definición de endpoints
+    Controllers         → Capa HTTP (request/response)
+    Services            → Lógica de negocio
+    Prisma ORM          → Acceso a base de datos
+    PostgreSQL          → Almacenamiento persistente
+```
 
 ```
 petsocial-backend/
 ├── prisma/
-│   ├── schema.prisma          # Modelos de base de datos
-│   └── migrations/            # Migraciones de Prisma
+│   ├── schema.prisma          # Modelos de datos (10 modelos)
+│   ├── seed.ts                # Datos de demostración
+│   └── migrations/            # Migraciones de base de datos
 ├── src/
-│   ├── config/
-│   │   ├── cloudinary.ts      # Configuración de Cloudinary
-│   │   └── prisma.ts         # Cliente de Prisma
-│   ├── controllers/          # Capa de Controllers (HTTP)
-│   ├── services/             # Capa de Servicios (lógica)
-│   ├── routes/               # Definición de rutas
-│   ├── middlewares/          # Middlewares de Express
-│   │   ├── auth.middleware.ts
-│   │   ├── error.middleware.ts
-│   │   ├── rateLimit.middleware.ts
-│   │   └── validate.middleware.ts
-│   ├── validations/          # Schemas de Zod
-│   ├── utils/
-│   │   ├── jwt.ts            # Funciones de JWT
-│   │   └── httpError.ts      # Clase de errores HTTP
-│   ├── sockets/             # Handlers de Socket.IO
-│   ├── __tests__/           # Tests unitarios
-│   ├── app.ts               # Configuración de Express
-│   └── server.ts            # Punto de entrada
-├── .env                      # Variables de entorno
-├── jest.config.js           # Configuración de Jest
-├── package.json
-└── tsconfig.json
+│   ├── config/                # Configuración (Prisma, Cloudinary, Passport, Nodemailer)
+│   ├── controllers/           # Controladores HTTP
+│   ├── services/              # Lógica de negocio
+│   ├── routes/                # Definición de rutas Express
+│   ├── middlewares/           # Autenticación, validación, rate limit, errores, upload
+│   ├── sockets/               # Handlers de Socket.IO (chat, presencia)
+│   ├── validations/           # Esquemas Zod
+│   ├── utils/                 # Utilidades (JWT, errores HTTP)
+│   ├── types/                 # Tipos extendidos de Express
+│   ├── __tests__/             # Tests unitarios (Jest + Supertest)
+│   ├── app.ts                 # Configuración de Express
+│   └── server.ts              # Punto de entrada (HTTP + Socket.IO)
+├── .env                       # Variables de entorno
+├── jest.config.js
+├── tsconfig.json
+└── package.json
 ```
 
 ---
 
-## Arquitectura
+## 🗄️ Modelo de Datos
 
-El proyecto sigue el patrón **MVC adaptado** con servicios:
-
-- **Controllers**: Manejan la capa HTTP, reciben requests y responden
-- **Services**: Contienen la lógica de negocio
-- **Middlewares**: Validación, autenticación, errores
-- **Prisma**: Capa de acceso a la base de datos
-- **Routes**: Definen los endpoints y sus controladores
-
----
-
-## Manejo de Errores
-
-Todos los errores se manejan a través de un middleware global de errores.
-
-Formato de respuesta de error estándar:
-
-```json
-{
-    "success": false,
-    "message": "Error message"
-}
-```
+| Modelo | Descripción | Relaciones Clave |
+|---|---|---|
+| **User** | Usuario del sistema | 1:N → Pet, Notification |
+| **Pet** | Perfil de mascota | N:1 User; 1:N → Post, Like, Comment, Favorite, Follow; M:N → Conversation |
+| **Post** | Publicación con imagen | N:1 Pet; 1:N → Like, Comment, Favorite, Notification |
+| **Like** | Like en publicación | `@@unique(petId, postId)` |
+| **Comment** | Comentario en publicación | N:1 Pet, Post |
+| **Favorite** | Favorito (bookmark) | `@@unique(petId, postId)` |
+| **Follow** | Seguimiento entre mascotas | `@@unique(followerId, followingId)` — auto-referencial via Pet |
+| **PostTag** | Etiqueta de mascota en post | `@@unique(postId, petId)` |
+| **Notification** | Notificación (like, comment, follow) | Polimórfica: Pet(actor), Post, User |
+| **Conversation** | Conversación de chat | 1:N → Participant, Message |
+| **Message** | Mensaje en conversación | N:1 Pet(remitente), Conversation |
 
 ---
 
-## Testing
+## 🔌 Endpoints de la API
 
-El proyecto cuenta con tests unitarios usando Jest.
-
-```bash
-# Ejecutar tests
-npm test
-
-# Ejecutar tests con coverage
-npm run test:coverage
-```
-
-Tests implementados:
-
-- **Auth Service**: Registro, login, refresh token
-- **User Service**: Perfil, actualización
-- **Post Service**: Crear post, feed, posts por mascota
-
----
-
-## Instalación y Uso
-
-### Requisitos Previos
-
-- Node.js (v18+)
-- PostgreSQL
-- Cuenta de Cloudinary (para imágenes)
-
-### Comandos
-
-```bash
-# Instalar dependencias
-npm install
-
-# Generar Prisma Client
-npx prisma generate
-
-# Ejecutar migraciones
-npx prisma migrate dev
-
-# Desarrollo (con hot-reload)
-npm run dev
-
-# Build de producción
-npm run build
-
-# Iniciar producción
-npm start
-
-# Ejecutar tests
-npm test
-
-# Tests con coverage
-npm run test:coverage
-```
-
----
-
-## Endpoints Principales
+### Salud
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/health` | Health check |
 
 ### Autenticación
-
-- `POST /auth/register` - Registro de usuario
-- `POST /auth/login` - Login
-- `POST /auth/refresh` - Renovar tokens
-- `POST /auth/logout` - Logout
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/auth/register` | Registro de usuario |
+| POST | `/auth/login` | Inicio de sesión |
+| POST | `/auth/refresh` | Renovar tokens |
+| POST | `/auth/logout` | Cerrar sesión |
+| POST | `/auth/forgot-password` | Solicitar recuperación de contraseña |
+| POST | `/auth/reset-password` | Restablecer contraseña |
+| GET | `/auth/google` | Inicio de sesión con Google |
+| GET | `/auth/google/callback` | Callback de Google OAuth |
 
 ### Mascotas
-
-- `GET /pets` - Listar mascotas del usuario
-- `POST /pets` - Crear mascota
-- `PUT /pets/:id` - Actualizar mascota
-- `DELETE /pets/:id` - Eliminar mascota
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/pets` | Crear mascota |
+| GET | `/pets/me` | Mis mascotas |
+| GET | `/pets/explore` | Explorar mascotas |
+| GET | `/pets/search?q=` | Buscar mascotas por nombre |
+| GET | `/pets/:id` | Perfil de mascota |
+| PUT | `/pets/:id` | Actualizar mascota |
+| DELETE | `/pets/:id` | Eliminar mascota |
+| POST | `/pets/select/:petId` | Seleccionar mascota activa |
 
 ### Publicaciones
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/posts/feed` | Feed con paginación por cursor |
+| GET | `/posts/all` | Feed público (máx. 50) |
+| GET | `/posts/pet/:petId` | Posts de una mascota |
+| GET | `/posts/:id` | Detalle de publicación |
+| POST | `/posts` | Crear publicación |
+| PUT | `/posts/:id` | Actualizar publicación |
+| DELETE | `/posts/:id` | Eliminar publicación |
 
-- `GET /posts/feed` - Feed de publicaciones
-- `POST /posts` - Crear publicación
-- `DELETE /posts/:id` - Eliminar publicación
-- `POST /posts/:id/like` - Dar/quitar like
-- `POST /posts/:id/comments` - Comentar
+### Likes
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/likes/toggle/:postId` | Dar o quitar like |
+| POST | `/likes/:postId` | Listar likes de un post |
 
-### Seguimientos
+### Comentarios
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/comments/:postId` | Comentarios de un post |
+| POST | `/comments/:postId` | Crear comentario |
+| PUT | `/comments/:commentId` | Editar comentario |
+| DELETE | `/comments/:commentId` | Eliminar comentario |
 
-- `POST /follow/:petId` - Seguir mascota
-- `DELETE /follow/:petId` - Dejar de seguir
-- `GET /follow/:petId/status` - Estado de seguimiento
+### Seguimiento
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/follow/:petId` | Seguir / dejar de seguir |
+| GET | `/follow/:petId/followers` | Seguidores (paginación por cursor) |
+| GET | `/follow/:petId/following` | Mascotas que sigue |
 
-### Mensajería
+### Favoritos
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/favorites/toggle/:postId` | Guardar / quitar de favoritos |
+| GET | `/favorites` | Listar favoritos |
 
-- `GET /conversations` - Listar conversaciones
-- `POST /conversations` - Crear conversación
-- `GET /conversations/:id/messages` - Mensajes de conversación
+### Notificaciones
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/notifications/:petId` | Notificaciones agrupadas |
+| GET | `/notifications/:petId/unread/count` | Contador de no leídas |
+| PATCH | `/notifications/:petId/read-all` | Marcar todas como leídas |
+| PATCH | `/notifications/:id/read` | Marcar una como leída |
 
----
+### Conversaciones
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/conversations` | Listar conversaciones |
+| POST | `/conversations` | Crear o reanudar conversación |
+| GET | `/conversations/:id` | Mensajes de la conversación |
+| PUT | `/conversations/:id/read` | Marcar mensajes como leídos |
+| DELETE | `/conversations/:id` | Eliminar conversación |
+| POST | `/conversations/:id/messages` | Enviar mensaje (fallback HTTP) |
 
-## Modelos de Base de Datos
-
-### User
-
-- id, name, email, password, avatar, lastSeen, refreshToken, createdAt
-
-### Pet
-
-- id, name, bio, image, ownerId (relación con User), createdAt
-
-### Post
-
-- id, image, description, content, petId (relación con Pet), createdAt
-
-### Like
-
-- petId, postId (relación única compuesta)
-
-### Comment
-
-- id, content, petId, postId, createdAt
-
-### Follow
-
-- followerId, followingId (relación única compuesta entre mascotas)
-
-### PostTag
-
-- postId, petId (relación para etiquetar mascotas en posts)
-
-### Notification
-
-- id, petId (receptor), actorId (accionador), postId, type, message, isRead
-
-### Conversation
-
-- id, createdAt, updatedAt
-
-### Message
-
-- id, content, senderId, conversationId, isRead, createdAt
-
----
-
-## Tecnologías y Dependencias
-
-### Dependencias de Producción
-
-- `@prisma/client` - ORM de base de datos
-- `bcrypt` - Hash de contraseñas
-- `cloudinary` - Almacenamiento de imágenes
-- `cookie-parser` - Parseo de cookies
-- `cors` - Configuración de CORS
-- `dotenv` - Variables de entorno
-- `express` - Framework web
-- `express-rate-limit` - Rate limiting
-- `jsonwebtoken` - JWT
-- `multer` - Manejo de uploads
-- `multer-storage-cloudinary` - Storage de Cloudinary
-- `socket.io` - WebSockets
-- `zod` - Validación de datos
-
-### Dependencias de Desarrollo
-
-- `typescript`
-- `ts-node-dev`
-- `jest`, `ts-jest`, `@types/jest` - Testing
-- `supertest`, `@types/supertest` - Testing de HTTP
+### Usuarios
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/me` | Información del usuario autenticado |
+| GET | `/users/:userId/profile` | Perfil completo de mascota |
+| PUT | `/users/:userId` | Actualizar perfil de usuario |
+| DELETE | `/users/me` | Eliminar cuenta |
 
 ---
 
-## Características Futuras (pendientes)
+## 🔌 Eventos Socket.IO
 
-- Verificación de email
-- Reseteo de contraseña
-- Tests de integración
-- Documentación con Swagger/OpenAPI
+| Evento (cliente → servidor) | Descripción |
+|---|---|
+| `joinConversations` | Unirse a salas de conversaciones activas |
+| `startConversation` | Iniciar conversación con otra mascota |
+| `sendMessage` | Enviar mensaje a una conversación |
+| `markAsRead` | Marcar mensajes como leídos |
+| `getMessages` | Obtener historial de mensajes |
+| `getOnlinePets` | Obtener mascotas conectadas |
+
+| Evento (servidor → cliente) | Descripción |
+|---|---|
+| `newMessage` | Nuevo mensaje recibido |
+| `messagesRead` | Confirmación de lectura |
+| `petOnline` / `petOffline` | Estado de conexión de mascotas |
+| `notification` | Nueva notificación en tiempo real |
 
 ---
 
-## Uso con Frontend
+## 🛠️ Stack Tecnológico
 
-Esta API está diseñada para funcionar con un frontend (por ejemplo, React/Vue). El frontend debe:
+### Runtime y Lenguaje
+- **Node.js** (v18+) — Entorno de ejecución
+- **TypeScript** (v5.9) — Tipado estático
+- **Express.js** (v5.2) — Framework web
 
-1. Guardar las cookies `accessToken`, `refreshToken` y `petId`
-2. Incluir `credentials: true` en las requests
-3. Manejar la renovación automática de tokens
-4. Conectar a Socket.IO para notificaciones en tiempo real
+### Base de Datos y ORM
+- **PostgreSQL** — Base de datos relacional
+- **Prisma** (v6.19) — ORM con migraciones y generación de cliente
+
+### Autenticación y Seguridad
+- **jsonwebtoken** — Tokens JWT de acceso y renovación
+- **bcrypt** — Hashing de contraseñas
+- **Passport.js** — Estrategias OAuth (Google, Facebook)
+- **express-rate-limit** — Limitación de velocidad por endpoint
+- **cookie-parser** — Parseo de cookies seguras
+
+### Almacenamiento de Imágenes
+- **Cloudinary** — Almacenamiento y optimización de imágenes
+- **Multer** + **multer-storage-cloudinary** — Middleware de subida
+
+### Tiempo Real
+- **Socket.IO** (v4.8) — Comunicación bidireccional en tiempo real
+
+### Validación
+- **Zod** (v4.3) — Validación de esquemas de datos
+
+### Correo Electrónico
+- **Nodemailer** — Envío de correos (recuperación de contraseña)
+
+### Testing
+- **Jest** + **ts-jest** — Framework de testing
+- **Supertest** — Testing de endpoints HTTP
+
+### Desarrollo
+- **ts-node-dev** — Recarga en caliente durante desarrollo
 
 ---
 
-## Licencia
+## 🚀 Instalación y Uso
+
+### Requisitos Previos
+- Node.js v18+
+- PostgreSQL en ejecución
+- Cuenta en [Cloudinary](https://cloudinary.com)
+
+### Configuración
+
+```bash
+# 1. Clonar el repositorio
+git clone <repo-url>
+cd petsocial-backend
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# 4. Generar Prisma Client y ejecutar migraciones
+npx prisma generate
+npx prisma migrate dev
+
+# 5. (Opcional) Sembrar datos de demostración
+npx prisma db seed
+
+# 6. Iniciar en modo desarrollo
+npm run dev
+```
+
+### Comandos Disponibles
+
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Iniciar servidor con hot-reload |
+| `npm run build` | Compilar TypeScript a JavaScript |
+| `npm start` | Iniciar servidor en producción |
+| `npm test` | Ejecutar tests unitarios |
+| `npm run test:coverage` | Ejecutar tests con reporte de cobertura |
+| `npx prisma studio` | Abrir interfaz gráfica de la base de datos |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Ejecutar suite de tests
+npm test
+
+# Con reporte de cobertura
+npm run test:coverage
+```
+
+Cobertura actual:
+- **Auth Service**: Registro, login, refresh token
+- **User Service**: Perfil, actualización
+- **Post Service**: Creación de posts, feed, consulta por mascota
+
+---
+
+## 📦 Variables de Entorno
+
+| Variable | Descripción |
+|---|---|
+| `DATABASE_URL` | Cadena de conexión a PostgreSQL |
+| `PORT` | Puerto del servidor (por defecto: 3000) |
+| `JWT_SECRET` | Secreto para firmar tokens de acceso |
+| `JWT_REFRESH_SECRET` | Secreto para firmar tokens de renovación |
+| `CLIENT_URL` / `FRONTEND_URL` | URL del frontend (CORS) |
+| `CLOUDINARY_CLOUD_NAME` | Nombre del cloud en Cloudinary |
+| `CLOUDINARY_API_KEY` | API Key de Cloudinary |
+| `CLOUDINARY_API_SECRET` | API Secret de Cloudinary |
+| `GOOGLE_CLIENT_ID` | Client ID de Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Client Secret de Google OAuth |
+| `SMTP_HOST` / `SMTP_PORT` | Servidor SMTP |
+| `SMTP_USER` / `SMTP_PASS` | Credenciales SMTP |
+
+---
+
+## 🤝 Contribuir
+
+1. Fork del repositorio
+2. Crear una rama (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit de cambios (`git commit -m 'feat: agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abrir un Pull Request
+
+---
+
+## 📄 Licencia
 
 ISC
